@@ -23,6 +23,12 @@
     self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:[[ViewController alloc] init]];
     
     [self.window makeKeyAndVisible];
+    UINavigationController *navigationVC = (UINavigationController *)self.window.rootViewController;
+    ViewController *browserVC = [[navigationVC viewControllers] firstObject];
+    UIAlertController *alertMessage = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Welcome!", @"Welcome")
+                                                                          message:@"Enjoy Using the Browser"
+                                                                   preferredStyle:UIAlertControllerStyleAlert];
+    [browserVC presentViewController:alertMessage animated:YES completion:nil];
     return YES;
 }
 

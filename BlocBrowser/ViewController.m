@@ -66,7 +66,6 @@
         [mainView addSubview:viewToAdd];
     }
     
-    
     self.view = mainView;
 }
 
