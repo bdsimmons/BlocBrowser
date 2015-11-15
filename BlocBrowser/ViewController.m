@@ -193,4 +193,8 @@
     }
 }
 
+- (void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didPinchWithScale:(CGFloat)scale {
+    toolbar.transform = CGAffineTransformScale(toolbar.transform, scale, scale);
+}
+
 @end

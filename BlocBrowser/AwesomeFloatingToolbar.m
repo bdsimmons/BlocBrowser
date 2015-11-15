@@ -11,11 +11,13 @@
 @interface AwesomeFloatingToolbar ()
 
 @property (nonatomic, strong) NSArray *currentTitles;
-@property (nonatomic, strong) NSArray *colors;
+@property (nonatomic, strong) NSMutableArray *colors;
 @property (nonatomic, strong) NSArray *labels;
 @property (nonatomic, weak) UILabel *currentLabel;
 @property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
 @property (nonatomic, strong) UIPanGestureRecognizer *panGesture;
+@property (nonatomic, strong) UIPinchGestureRecognizer *pinchGesture;
+@property (nonatomic, strong) UILongPressGestureRecognizer *longPressGesture;
 
 @end
 
@@ -29,10 +31,11 @@
         
         // Save the titles, and set the 4 colors
         self.currentTitles = titles;
-        self.colors = @[[UIColor colorWithRed:199/255.0 green:158/255.0 blue:203/255.0 alpha:1],
+        self.colors = [NSMutableArray arrayWithObjects:
+                        [UIColor colorWithRed:199/255.0 green:158/255.0 blue:203/255.0 alpha:1],
                         [UIColor colorWithRed:255/255.0 green:105/255.0 blue:97/255.0 alpha:1],
                         [UIColor colorWithRed:222/255.0 green:165/255.0 blue:164/255.0 alpha:1],
-                        [UIColor colorWithRed:255/255.0 green:179/255.0 blue:71/255.0 alpha:1]];
+                        [UIColor colorWithRed:255/255.0 green:179/255.0 blue:71/255.0 alpha:1], nil];
         
         NSMutableArray *labelsArray = [[NSMutableArray alloc] init];
         
@@ -65,6 +68,10 @@
         [self addGestureRecognizer:self.tapGesture];
         self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panFired:)];
         [self addGestureRecognizer:self.panGesture];
+        self.pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchFired:)];
+        [self addGestureRecognizer:self.pinchGesture];
+        self.longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressFired:)];
+        [self addGestureRecognizer:self.longPressGesture];
     }
     
     return self;
@@ -142,6 +149,44 @@
         [recognizer setTranslation:CGPointZero inView:self];
     }
 }
+
+- (void) pinchFired:(UIPinchGestureRecognizer *)recognizer {
+    if (recognizer.state == UIGestureRecognizerStateChanged) {
+        CGFloat scale = [recognizer scale];
+        
+        if ([self.delegate respondsToSelector:@selector(floatingToolbar:didPinchWithScale:)]) {
+            [self.delegate floatingToolbar:self didPinchWithScale:scale];
+        }
+        
+        recognizer.scale = 1;
+    }
+}
+
+- (void) longPressFired:(UILongPressGestureRecognizer *)recognizer {
+    if (recognizer.state == UIGestureRecognizerStateBegan)  {
+        for (NSUInteger i = 0; i < [self.colors count] ; i++) {
+            NSObject *obj = [self.colors lastObject];
+            if (i < 2) {
+                [self.colors insertObject:obj atIndex:i+1];
+                [self.colors removeLastObject];
+            } else if (i == 2) {
+                [self.colors insertObject:obj atIndex:i];
+                [self.colors removeLastObject];
+            } else if (i == 3) {
+                [self.colors insertObject:obj atIndex:0];
+                [self.colors removeLastObject];
+            }
+            
+        }
+        
+        for (UILabel *thisLabel in self.labels) {
+            NSUInteger currentLabelIndex = [self.labels indexOfObject:thisLabel];
+            UIColor *colorForThisLabel = [self.colors objectAtIndex:currentLabelIndex];
+            thisLabel.backgroundColor = colorForThisLabel ;
+        }
+    }
+}
+
 
 #pragma mark - Button Enabling
 
